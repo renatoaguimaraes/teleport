@@ -26,119 +26,117 @@ import (
 	"github.com/gravitational/teleport/lib/utils"
 
 	"github.com/stretchr/testify/require"
-	"gopkg.in/check.v1"
 )
 
-func TestConfig(t *testing.T) { check.TestingT(t) }
-
-type ConfigSuite struct {
-}
-
-var _ = check.Suite(&ConfigSuite{})
-
-func (s *ConfigSuite) TestDefaultConfig(c *check.C) {
+func TestDefaultConfig(t *testing.T) {
 	config := MakeDefaultConfig()
-	c.Assert(config, check.NotNil)
+	require.NotNil(t, config)
 
 	// all 3 services should be enabled by default
-	c.Assert(config.Auth.Enabled, check.Equals, true)
-	c.Assert(config.SSH.Enabled, check.Equals, true)
-	c.Assert(config.Proxy.Enabled, check.Equals, true)
+	require.True(t, config.Auth.Enabled)
+	require.True(t, config.SSH.Enabled)
+	require.True(t, config.Proxy.Enabled)
 
 	localAuthAddr := utils.NetAddr{AddrNetwork: "tcp", Addr: "0.0.0.0:3025"}
 	localProxyAddr := utils.NetAddr{AddrNetwork: "tcp", Addr: "0.0.0.0:3023"}
 
 	// data dir, hostname and auth server
-	c.Assert(config.DataDir, check.Equals, defaults.DataDir)
+	require.Equal(t, config.DataDir, defaults.DataDir)
 	if len(config.Hostname) < 2 {
-		c.Error("default hostname wasn't properly set")
+		t.Fatal("default hostname wasn't properly set")
 	}
 
 	// crypto settings
-	c.Assert(config.CipherSuites, check.DeepEquals, utils.DefaultCipherSuites())
+	require.Equal(t, config.CipherSuites, utils.DefaultCipherSuites())
 	// Unfortunately the below algos don't have exported constants in
 	// golang.org/x/crypto/ssh for us to use.
-	c.Assert(config.Ciphers, check.DeepEquals, []string{
+	require.Equal(t, config.Ciphers, []string{
 		"aes128-gcm@openssh.com",
 		"chacha20-poly1305@openssh.com",
 		"aes128-ctr",
 		"aes192-ctr",
 		"aes256-ctr",
 	})
-	c.Assert(config.KEXAlgorithms, check.DeepEquals, []string{
+	require.Equal(t, config.KEXAlgorithms, []string{
 		"curve25519-sha256@libssh.org",
 		"ecdh-sha2-nistp256",
 		"ecdh-sha2-nistp384",
 		"ecdh-sha2-nistp521",
 	})
-	c.Assert(config.MACAlgorithms, check.DeepEquals, []string{
+	require.Equal(t, config.MACAlgorithms, []string{
 		"hmac-sha2-256-etm@openssh.com",
 		"hmac-sha2-256",
 	})
-	c.Assert(config.CASignatureAlgorithm, check.IsNil)
+	require.Nil(t, config.CASignatureAlgorithm)
 
 	// auth section
 	auth := config.Auth
-	c.Assert(auth.SSHAddr, check.DeepEquals, localAuthAddr)
-	c.Assert(auth.Limiter.MaxConnections, check.Equals, int64(defaults.LimiterMaxConnections))
-	c.Assert(auth.Limiter.MaxNumberOfUsers, check.Equals, defaults.LimiterMaxConcurrentUsers)
-	c.Assert(config.Auth.StorageConfig.Type, check.Equals, lite.GetName())
-	c.Assert(auth.StorageConfig.Params[defaults.BackendPath], check.Equals, filepath.Join(config.DataDir, defaults.BackendDir))
+	require.Equal(t, auth.SSHAddr, localAuthAddr)
+	require.Equal(t, auth.Limiter.MaxConnections, int64(defaults.LimiterMaxConnections))
+	require.Equal(t, auth.Limiter.MaxNumberOfUsers, defaults.LimiterMaxConcurrentUsers)
+	require.Equal(t, config.Auth.StorageConfig.Type, lite.GetName())
+	require.Equal(t, auth.StorageConfig.Params[defaults.BackendPath], filepath.Join(config.DataDir, defaults.BackendDir))
 
 	// SSH section
 	ssh := config.SSH
-	c.Assert(ssh.Limiter.MaxConnections, check.Equals, int64(defaults.LimiterMaxConnections))
-	c.Assert(ssh.Limiter.MaxNumberOfUsers, check.Equals, defaults.LimiterMaxConcurrentUsers)
+	require.Equal(t, ssh.Limiter.MaxConnections, int64(defaults.LimiterMaxConnections))
+	require.Equal(t, ssh.Limiter.MaxNumberOfUsers, defaults.LimiterMaxConcurrentUsers)
 
 	// proxy section
 	proxy := config.Proxy
-	c.Assert(proxy.SSHAddr, check.DeepEquals, localProxyAddr)
-	c.Assert(proxy.Limiter.MaxConnections, check.Equals, int64(defaults.LimiterMaxConnections))
-	c.Assert(proxy.Limiter.MaxNumberOfUsers, check.Equals, defaults.LimiterMaxConcurrentUsers)
+	require.Equal(t, proxy.SSHAddr, localProxyAddr)
+	require.Equal(t, proxy.Limiter.MaxConnections, int64(defaults.LimiterMaxConnections))
+	require.Equal(t, proxy.Limiter.MaxNumberOfUsers, defaults.LimiterMaxConcurrentUsers)
 }
 
 // TestAppName makes sure application names are valid subdomains.
-func (s *ConfigSuite) TestAppName(c *check.C) {
+func TestAppName(t *testing.T) {
 	tests := []struct {
-		desc     check.CommentInterface
+		desc     string
 		inName   string
 		outValid bool
 	}{
 		{
-			desc:     check.Commentf("valid subdomain"),
+			desc:     "valid subdomain",
 			inName:   "foo",
 			outValid: true,
 		},
 		{
-			desc:     check.Commentf("subdomain cannot start with a dash"),
+			desc:     "subdomain cannot start with a dash",
 			inName:   "-foo",
 			outValid: false,
 		},
 		{
-			desc:     check.Commentf(`subdomain cannot contain the exclamation mark character "!"`),
+			desc:     `subdomain cannot contain the exclamation mark character "!"`,
 			inName:   "foo!bar",
 			outValid: false,
 		},
 		{
-			desc:     check.Commentf("subdomain of length 63 characters is valid (maximum length)"),
+			desc:     "subdomain of length 63 characters is valid (maximum length)",
 			inName:   "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 			outValid: true,
 		},
 		{
-			desc:     check.Commentf("subdomain of length 64 characters is invalid"),
+			desc:     "subdomain of length 64 characters is invalid",
 			inName:   "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 			outValid: false,
 		},
 	}
 
 	for _, tt := range tests {
-		a := App{
-			Name:       tt.inName,
-			URI:        "http://localhost:8080",
-			PublicAddr: "foo.example.com",
-		}
-		err := a.Check()
-		c.Assert(err == nil, check.Equals, tt.outValid, tt.desc)
+		t.Run(tt.desc, func(t *testing.T) {
+			a := App{
+				Name:       tt.inName,
+				URI:        "http://localhost:8080",
+				PublicAddr: "foo.example.com",
+			}
+			err := a.Check()
+			if tt.outValid {
+				require.NoError(t, err)
+			} else {
+				require.Error(t, err)
+			}
+		})
 	}
 }
 
@@ -291,6 +289,54 @@ func TestCheckDatabase(t *testing.T) {
 				require.Error(t, err)
 			} else {
 				require.NoError(t, err)
+			}
+		})
+	}
+}
+
+// TestParseHeaders validates parsing of strings into http header objects.
+func TestParseHeaders(t *testing.T) {
+	tests := []struct {
+		desc string
+		in   []string
+		out  []Header
+		err  string
+	}{
+		{
+			desc: "parse multiple headers",
+			in: []string{
+				"Host: example.com    ",
+				"X-Teleport-Logins: root, {{internal.logins}}",
+				"X-Env  : {{external.env}}",
+				"X-Env: env:prod",
+			},
+			out: []Header{
+				{Name: "Host", Value: "example.com"},
+				{Name: "X-Teleport-Logins", Value: "root, {{internal.logins}}"},
+				{Name: "X-Env", Value: "{{external.env}}"},
+				{Name: "X-Env", Value: "env:prod"},
+			},
+		},
+		{
+			desc: "invalid header format (missing value)",
+			in:   []string{"X-Header"},
+			err:  `failed to parse "X-Header" as http header`,
+		},
+		{
+			// Empty header value is not valid as per https://tools.ietf.org/html/rfc7230#section-3.2.
+			desc: "invalid header format (empty value)",
+			in:   []string{"X-Empty:"},
+			err:  `http header "X-Empty:" value is empty`,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.desc, func(t *testing.T) {
+			out, err := ParseHeaders(test.in)
+			if test.err != "" {
+				require.EqualError(t, err, test.err)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, test.out, out)
 			}
 		})
 	}

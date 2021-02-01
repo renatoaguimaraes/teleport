@@ -25,6 +25,7 @@ import (
 	"path"
 
 	"github.com/gravitational/teleport"
+	"github.com/gravitational/teleport/api/types/wrappers"
 	"github.com/gravitational/teleport/lib"
 	"github.com/gravitational/teleport/lib/defaults"
 	"github.com/gravitational/teleport/lib/events"
@@ -33,6 +34,7 @@ import (
 
 	"github.com/gravitational/oxy/forward"
 	"github.com/gravitational/trace"
+	"github.com/sirupsen/logrus"
 )
 
 // transportConfig is configuration for a rewriting transport.
@@ -45,6 +47,7 @@ type transportConfig struct {
 	jwt                string
 	rewrite            *services.Rewrite
 	w                  events.StreamWriter
+	traits             wrappers.Traits
 }
 
 // Check validates configuration.
@@ -170,7 +173,26 @@ func (t *transport) rewriteRequest(r *http.Request) error {
 	r.Header.Set(teleport.AppJWTHeader, t.c.jwt)
 	r.Header.Set(teleport.AppCFHeader, t.c.jwt)
 
+	// Add headers from rewrite configuration.
+	if t.c.rewrite != nil && len(t.c.rewrite.Headers) > 0 {
+		t.rewriteHeaders(r)
+	}
+
 	return nil
+}
+
+// rewriteHeaders applies headers rewrites from the application configuration.
+func (t *transport) rewriteHeaders(r *http.Request) {
+	for _, header := range t.c.rewrite.Headers {
+		values, err := services.ApplyValueTraits(header.Value, t.c.traits)
+		if err != nil {
+			logrus.Warnf("Failed to apply traits to %q: %v.", header.Value, err)
+			continue
+		}
+		for _, value := range values {
+			r.Header.Add(header.Name, value)
+		}
+	}
 }
 
 // needsPathRedirect checks if the request should be redirected to a different path.
