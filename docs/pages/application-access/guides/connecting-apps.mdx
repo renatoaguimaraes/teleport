@@ -8,7 +8,7 @@ description: How to configure Teleport for Application Access
 Download the latest version of Teleport for your platform from our [downloads page](https://goteleport.com/teleport/download)
 and follow the installation [instructions](../../installation.mdx).
 
-## Start Auth/Proxy Service
+## Start Auth/Proxy service
 
 Create a configuration file for a Teleport service that will be running
 auth and proxy servers:
@@ -32,7 +32,7 @@ Start the service:
 $ teleport start --config=/path/to/teleport.yaml
 ```
 
-### Generate Token
+### Generate token
 
 A join token is required to authorize a Teleport Application Proxy service to
 join the cluster. Generate a short-lived join token and save it for example
@@ -45,7 +45,7 @@ $ tctl tokens add \
     --app-uri=http://localhost:3000
 ```
 
-### TLS Requirements
+### TLS requirements
 
 TLS is required to secure Teleport's Unified Access Plane and any connected
 applications. When setting up Teleport, the minimum requirement is a certificate
@@ -78,8 +78,7 @@ proxy_service:
 >
   Teleport uses [TLS-ALPN-01](https://letsencrypt.org/docs/challenge-types/#tls-alpn-01)
   ACME challenge to validate certificate requests which only works on port `443`.
-  As such, in order to use ACME for certificate management, web proxy needs to
-  be accessible on port `443`.
+  As such, to use ACME for certificate management, web proxy needs to be accessible on port `443`.
 </Admonition>
 
 Alternatively, if you have obtained certificate/key pairs for your domain
@@ -98,7 +97,7 @@ proxy_service:
     cert_file: "/etc/letsencrypt/live/*.teleport.example.com/fullchain.pem"
 ```
 
-### Create a User
+### Create a user
 
 A Teleport user needs their role's permission to access an application. Teleport
 comes with a built-in `access` role that grants access to all apps:
@@ -125,7 +124,7 @@ Note that the `--auth-server` flag must point to the Teleport cluster's proxy
 endpoint because the application service always connects back to the cluster over
 a reverse tunnel.
 
-### Application Name
+### Application name
 
 An application name should make a valid sub-domain (\<=63 characters, no spaces, only `a-z 0-9 _ -` allowed).
 
@@ -153,7 +152,7 @@ teleport:
   - teleport.example.com:3080
 app_service:
     enabled: yes
-    # Teleport provides a small debug app that can be used to make sure application
+    # Teleport provides a small debug app that can be used to make sure the application
     # access is working correctly. It'll output JWTs so it can be useful
     # when extending your application.
     debug_app: true
@@ -188,11 +187,11 @@ Start the application service:
 $ teleport start --config=/path/to/teleport.yaml
 ```
 
-## Advanced Options
+## Advanced options
 
-### Running Debug Application
+### Running debug application
 
-For testing and debugging purposes we provide a built-in debug app. It can
+For testing and debugging purposes, we provide a built-in debug app. It can
 be turned on using `debug_app: true`.
 
 ```yaml
@@ -203,7 +202,7 @@ app_service:
 
 The app will dump all the request headers in the response.
 
-### Customize Public Address
+### Customize public address
 
 By default applications are available at `<app-name>.<proxy-host>:<proxy-port>`
 address. To override the public address, specify the `public_addr` field:
@@ -214,7 +213,7 @@ address. To override the public address, specify the `public_addr` field:
   public_addr: "jira.example.com"
 ```
 
-### Skip TLS Certificate Verification
+### Skip TLS certificate verification
 
 <Admonition
   type="warning"
@@ -235,9 +234,9 @@ verification step:
   insecure_skip_verify: true
 ```
 
-### Deeplink to Subdirectory
+### Deeplink to subdirectory
 
-Some applications are available on a subdirectory. Examples include the
+Some applications are available in a subdirectory. Examples include the
 [Kubernetes Dashboard.](https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/).
 The URI should be updated to include the subdirectory:
 
@@ -264,7 +263,7 @@ that provide internal redirect headers:
     - "jenkins.internal.dev"
 ```
 
-## View Applications in Teleport
+## View applications in Teleport
 
 Teleport provides a UI for quickly launching connected applications.
 
@@ -273,10 +272,10 @@ The URL structure looks like this:
 
 `https://[cluster-url:cluster-port]/web/cluster/[cluster-name]/apps`
 
-## Logging out of Applications
+## Logging out of applications
 
 When you log into an application, you'll get a certificate and login session
-per your defined RBAC. If you want to force logout before this period you can
+per your defined RBAC. If you want to force log out before this period you can
 do so by hitting the `/teleport-logout` endpoint:
 
 [https://internal-app.teleport.example.com/teleport-logout](https://internal-app.teleport.example.com/teleport-logout)
