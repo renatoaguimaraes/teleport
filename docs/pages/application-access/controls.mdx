@@ -1,0 +1,83 @@
+---
+title: Application Access Access Controls
+description: Role-based access control (RBAC) for Teleport Application Access
+---
+
+# Application Access Role-Based Access Control
+
+## Assigning Labels to Applications
+
+Teleport Application Access uses labels to allow/deny access to the proxied
+web applications.
+
+An application can be assigned static and dynamic labels via configuration:
+
+```yaml
+apps:
+- name: "grafana"
+  uri: "http://localhost:3000"
+  # Static labels.
+  labels:
+    env: "prod"
+    group: "metrics"
+  # Dynamic labels.
+  commands:
+  - name: "arch"
+    command: ["uname", "-p"]
+    period: 1m0s
+```
+
+## Configuring Application Labels in Roles
+
+User roles can be configured to allow or deny access to applications with
+specific labels via `app_labels` property.
+
+For example, this role will grant access to all applications from the group
+"metrics", except for the production ones:
+
+```yaml
+kind: role
+version: v3
+metadata:
+  name: dev
+spec:
+  allow:
+    # At least one login must be present (even if invalid), otherwise user
+    # won't be allowed to log into the web UI.
+    logins: ["keep-this-value-here"]
+    app_labels:
+      group: "metrics"
+  deny:
+    app_labels:
+      env: "prod"
+```
+
+## Integrating with Identity Providers
+
+Role application labels can be populated dynamically based on the claims and
+attributes received from identity providers using template variables with
+`external` prefix.
+
+For example, this role will have its "env" and "group" label values set after
+the Okta user's attributes with the same names:
+
+```yaml
+allow:
+  app_labels:
+    env: "{{external.env}}"
+    group: "{{external.group}}"
+```
+
+## Next Steps
+
+- View access controls [Getting Started](../access-controls/getting-started.mdx)
+  and other available [guides](../access-controls/guides.mdx).
+- Learn about using [JWT tokens](./guides/jwt.mdx) to implement access controls
+  in your application.
+- Integrate with your identity provider:
+  - [OIDC guide](../enterprise/sso/oidc.mdx)
+  - [ADFS guide](../enterprise/sso/ssh-adfs.mdx)
+  - [Azure AD guide](../enterprise/sso/ssh-azuread.mdx)
+  - [GSuite guide](../enterprise/sso/ssh-azuread.mdx)
+  - [Onelogin guide](../enterprise/sso/ssh-one-login.mdx)
+  - [Okta guide](../enterprise/sso/ssh-okta.mdx)
