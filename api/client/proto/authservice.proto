@@ -1033,4 +1033,10 @@ service AuthService {
     rpc UpsertToken(types.ProvisionTokenV2) returns (google.protobuf.Empty);
     // DeleteToken deletes an existing token in a backend described by the given request.
     rpc DeleteToken(types.ResourceRequest) returns (google.protobuf.Empty);
+
+    // GetClusterNetworkingConfig gets cluster networking configuration.
+    rpc GetClusterNetworkingConfig(types.ConfigResourceRequest)
+        returns (types.ClusterNetworkingConfigV2);
+    // SetClusterNetworkingConfig sets cluster networking configuration.
+    rpc SetClusterNetworkingConfig(types.ClusterNetworkingConfigV2) returns (google.protobuf.Empty);
 }

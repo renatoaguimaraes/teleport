@@ -37,8 +37,6 @@ func DefaultClusterConfig() ClusterConfig {
 		Spec: ClusterConfigSpecV3{
 			SessionRecording:    RecordAtNode,
 			ProxyChecksHostKeys: HostKeyCheckYes,
-			KeepAliveInterval:   NewDuration(defaults.KeepAliveInterval),
-			KeepAliveCountMax:   int64(defaults.KeepAliveCountMax),
 			LocalAuth:           NewBool(true),
 		},
 	}
@@ -86,20 +84,8 @@ const ClusterConfigSpecSchemaTemplate = `{
 	  "cluster_id": {
 		"type": "string"
 	  },
-	  "client_idle_timeout": {
-		"type": "string"
-	  },
-	  "session_control_timeout": {
-		"type": "string"
-	  },
 	  "disconnect_expired_cert": {
 		"anyOf": [{"type": "string"}, { "type": "boolean"}]
-	  },
-	  "keep_alive_interval": {
-		"type": "string"
-	  },
-	  "keep_alive_count_max": {
-		"type": "number"
 	  },
 	  "local_auth": {
 		"anyOf": [{"type": "string"}, { "type": "boolean"}]
@@ -160,6 +146,7 @@ func UnmarshalClusterConfig(bytes []byte, opts ...MarshalOption) (ClusterConfig,
 		return nil, trace.Wrap(err)
 	}
 
+	fmt.Println("TU SOM", cfg.SkipValidation)
 	if cfg.SkipValidation {
 		if err := utils.FastUnmarshal(bytes, &clusterConfig); err != nil {
 			return nil, trace.BadParameter(err.Error())

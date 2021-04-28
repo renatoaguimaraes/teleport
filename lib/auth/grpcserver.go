@@ -2420,6 +2420,39 @@ func (g *GRPCServer) DeleteAllNodes(ctx context.Context, req *types.ResourcesInN
 	return &empty.Empty{}, nil
 }
 
+// GetClusterNetworkingConfig gets cluster networking configuration.
+func (g *GRPCServer) GetClusterNetworkingConfig(ctx context.Context, req *types.ConfigResourceRequest) (*types.ClusterNetworkingConfigV2, error) {
+	auth, err := g.authenticate(ctx)
+	if err != nil {
+		return nil, trail.ToGRPC(err)
+	}
+	var opts []services.MarshalOption
+	if req.SkipValidation {
+		opts = append(opts, services.SkipValidation())
+	}
+	netConfig, err := auth.ServerWithRoles.GetClusterNetworkingConfig(ctx, opts...)
+	if err != nil {
+		return nil, trail.ToGRPC(err)
+	}
+	netConfigV2, ok := netConfig.(*types.ClusterNetworkingConfigV2)
+	if !ok {
+		return nil, trail.ToGRPC(trace.BadParameter("unexpected type %T", netConfig))
+	}
+	return netConfigV2, nil
+}
+
+// SetClusterNetworkingConfig sets cluster networking configuration.
+func (g *GRPCServer) SetClusterNetworkingConfig(ctx context.Context, netConfig *types.ClusterNetworkingConfigV2) (*empty.Empty, error) {
+	auth, err := g.authenticate(ctx)
+	if err != nil {
+		return nil, trail.ToGRPC(err)
+	}
+	if err = auth.ServerWithRoles.SetClusterNetworkingConfig(ctx, netConfig); err != nil {
+		return nil, trail.ToGRPC(err)
+	}
+	return &empty.Empty{}, nil
+}
+
 type grpcContext struct {
 	*Context
 	*ServerWithRoles

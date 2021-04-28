@@ -1119,7 +1119,6 @@ func CollectOptions(opts ...Option) Options {
 // ClusterConfig tests cluster configuration
 func (s *ServicesTestSuite) ClusterConfig(c *check.C, opts ...Option) {
 	config, err := services.NewClusterConfig(services.ClusterConfigSpecV3{
-		ClientIdleTimeout:     services.NewDuration(17 * time.Second),
 		DisconnectExpiredCert: services.NewBool(true),
 		ClusterID:             "27",
 		SessionRecording:      services.RecordAtProxy,
@@ -1178,6 +1177,24 @@ func (s *ServicesTestSuite) ClusterConfig(c *check.C, opts ...Option) {
 	c.Assert(err, check.IsNil)
 	clusterName.SetResourceID(gotName.GetResourceID())
 	fixtures.DeepCompare(c, clusterName, gotName)
+}
+
+// ClusterNetworkingConfig tests cluster networking configuration.
+func (s *ServicesTestSuite) ClusterNetworkingConfig(c *check.C) {
+	netConfig, err := types.NewClusterNetworkingConfig(types.ClusterNetworkingConfigSpecV2{
+		ClientIdleTimeout: types.NewDuration(17 * time.Second),
+		KeepAliveCountMax: 3000,
+	})
+	c.Assert(err, check.IsNil)
+
+	err = s.ConfigS.SetClusterNetworkingConfig(context.TODO(), netConfig)
+	c.Assert(err, check.IsNil)
+
+	gotNetConfig, err := s.ConfigS.GetClusterNetworkingConfig(context.TODO())
+	c.Assert(err, check.IsNil)
+
+	c.Assert(gotNetConfig.GetClientIdleTimeout(), check.Equals, 17*time.Second)
+	c.Assert(gotNetConfig.GetKeepAliveCountMax(), check.Equals, int64(3000))
 }
 
 // sem wrapper is a helper for overriding the keepalive

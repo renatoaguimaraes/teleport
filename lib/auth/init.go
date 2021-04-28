@@ -137,6 +137,9 @@ type InitConfig struct {
 	// ClusterConfig holds cluster level configuration.
 	ClusterConfig services.ClusterConfig
 
+	// ClusterNetworkingConfig holds cluster networking configuration.
+	ClusterNetworkingConfig types.ClusterNetworkingConfig
+
 	// SkipPeriodicOperations turns off periodic operations
 	// used in tests that don't need periodc operations.
 	SkipPeriodicOperations bool
@@ -246,6 +249,11 @@ func Init(cfg InitConfig, opts ...ServerOption) (*Server, error) {
 		cfg.ClusterConfig.SetClusterID(uuid.New())
 	}
 	err = asrv.SetClusterConfig(cfg.ClusterConfig)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	err = asrv.SetClusterNetworkingConfig(ctx, cfg.ClusterNetworkingConfig)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}

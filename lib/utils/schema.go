@@ -18,6 +18,7 @@ package utils
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/gravitational/configure/jsonschema"
 	"github.com/gravitational/trace"
@@ -26,6 +27,7 @@ import (
 // UnmarshalWithSchema processes YAML or JSON encoded object with JSON schema, sets defaults
 // and unmarshals resulting object into given struct
 func UnmarshalWithSchema(schemaDefinition string, object interface{}, data []byte) error {
+	fmt.Println("schema defn:", schemaDefinition)
 	schema, err := jsonschema.New([]byte(schemaDefinition))
 	if err != nil {
 		return trace.Wrap(err)
@@ -34,7 +36,7 @@ func UnmarshalWithSchema(schemaDefinition string, object interface{}, data []byt
 	if err != nil {
 		return trace.Wrap(err)
 	}
-
+	fmt.Println("json data:", string(jsonData))
 	raw := map[string]interface{}{}
 	if err := json.Unmarshal(jsonData, &raw); err != nil {
 		return trace.Wrap(err)
@@ -44,6 +46,7 @@ func UnmarshalWithSchema(schemaDefinition string, object interface{}, data []byt
 	if err != nil {
 		return trace.Wrap(err)
 	}
+	fmt.Println("processed:", processed)
 	// since ProcessObject works with unstructured data, the
 	// data needs to be re-interpreted in structured form
 	bytes, err := json.Marshal(processed)
