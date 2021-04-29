@@ -7,7 +7,7 @@ description: Role-based access control (RBAC) for Teleport Application Access
 
 ## Assigning Labels to Applications
 
-Teleport Application Access uses labels to allow/deny access to the proxied
+Teleport Application Access uses labels to control access to the proxied
 web applications.
 
 An application can be assigned static and dynamic labels via configuration:
@@ -20,7 +20,8 @@ apps:
   labels:
     env: "prod"
     group: "metrics"
-  # Dynamic labels.
+  # Dynamic labels periodically execute a command and use its output
+  # as a label value.
   commands:
   - name: "arch"
     command: ["uname", "-p"]
@@ -29,8 +30,8 @@ apps:
 
 ## Configuring Application Labels in Roles
 
-User roles can be configured to allow or deny access to applications with
-specific labels via `app_labels` property.
+Teleport administrators can configure roles to allow or deny user's access to
+applications with specific labels using `app_labels` property.
 
 For example, this role will grant access to all applications from the group
 "metrics", except for the production ones:
@@ -42,9 +43,6 @@ metadata:
   name: dev
 spec:
   allow:
-    # At least one login must be present (even if invalid), otherwise user
-    # won't be allowed to log into the web UI.
-    logins: ["keep-this-value-here"]
     app_labels:
       group: "metrics"
   deny:
@@ -54,11 +52,11 @@ spec:
 
 ## Integrating with Identity Providers
 
-Role application labels can be populated dynamically based on the claims and
-attributes received from identity providers using template variables with
-`external` prefix.
+You can configure roles to populate app labels dynamically based on the user's
+claims and attributes received from identity providers. This is done by using
+template variables with `external` prefix.
 
-For example, this role will have its "env" and "group" label values set after
+For example, this role will have its `env` and `group` label values set after
 the Okta user's attributes with the same names:
 
 ```yaml

@@ -10,15 +10,11 @@ description: How to configure Teleport Database Access with AWS Redshift Postgre
 Collect a few pieces of information about your Redshift cluster which you'll
 need to configure access.
 
-- Cluster identifier.
-
-Can be found on the `General information` panel:
+- Cluster identifier can be found on the `General information` panel:
 
 ![Redshift Cluster ID](../../../img/database-access/guides/redshift/cluster-id@2x.png)
 
-- Cluster endpoint.
-
-Can also be copied from the `General information` panel:
+- Cluster endpoint can also be copied from the `General information` panel:
 
 ![Redshift Cluster Endpoint](../../../img/database-access/guides/redshift/cluster-endpoint@2x.png)
 
@@ -105,7 +101,7 @@ and `*.teleport.example.com` to point to the Teleport node.
 
 Let's generate a Teleport config with ACME enabled:
 
-```shell
+```bash
 $ teleport configure --cluster-name=teleport.example.com --acme --acme-email=alice@example.com -o file
 ```
 
@@ -121,14 +117,14 @@ $ teleport configure --cluster-name=teleport.example.com --acme --acme-email=ali
 
 Start the service:
 
-```sh
+```bash
 $ sudo teleport start
 ```
 
 Generate a short-lived join token for the database service and save it for
 example in `/tmp/token`:
 
-```sh
+```bash
 $ tctl tokens add \
     --type=db \
     --db-name=redshift \
@@ -136,11 +132,11 @@ $ tctl tokens add \
     --db-uri=redshift-cluster-1.abcdefg.us-east-1.redshift.amazonaws.com:5439
 ```
 
-### Create User
+### Create a User
 
-Create local Teleport user with the built-in `access` role:
+Create a local Teleport user with the built-in `access` role:
 
-```sh
+```bash
 $ tctl users add --roles=access alice
 ```
 
@@ -152,7 +148,7 @@ connect to the `dev` database as a `awsuser` database user.
 
 First, export the user resource:
 
-```sh
+```bash
 $ tctl get users/alice > alice.yaml
 ```
 
@@ -170,7 +166,7 @@ traits:
 
 Update the user:
 
-```sh
+```bash
 $ tctl create alice.yaml -f
 ```
 
@@ -234,7 +230,7 @@ proxy_service:
 
 Start the database service:
 
-```sh
+```bash
 $ teleport start --config=/path/to/teleport-db.yaml --token=/tmp/token
 ```
 
@@ -253,7 +249,7 @@ for more information.
 Once the database service has joined the cluster, login to see the available
 databases:
 
-```sh
+```bash
 $ tsh login --proxy=teleport.example.com:3080 --user=alice
 $ tsh db ls
 Name     Description             Labels
@@ -267,7 +263,7 @@ Note that you will only be able to see databases your role has access to. See
 To connect to a particular database server, first retrieve credentials from
 Teleport using `tsh db login` command:
 
-```sh
+```bash
 $ tsh db login redshift
 ```
 
@@ -281,7 +277,7 @@ $ tsh db login redshift
 You can optionally specify the database name and the user to use by default
 when connecting to the database instance:
 
-```sh
+```bash
 $ tsh db login --db-user=awsuser --db-name=dev redshift
 ```
 
@@ -292,7 +288,7 @@ with the name of `<cluster-name>-<database-service-name>`.
 Suppose the cluster name is "teleport.example.com", then you can connect to the
 database using the following `psql` command:
 
-```sh
+```bash
 # Use default database user and database name.
 $ psql "service=teleport.example.com-redshift"
 # Specify database user and database name explicitly.
@@ -301,7 +297,7 @@ $ psql "service=teleport.example.com-redshift user=awsuser dbname=dev"
 
 To log out of the database and remove credentials:
 
-```sh
+```bash
 # Remove credentials for a particular database instance.
 $ tsh db logout redshift
 # Remove credentials for all database instances.
