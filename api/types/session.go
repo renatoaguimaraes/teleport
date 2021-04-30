@@ -185,8 +185,23 @@ func (ws *WebSessionV2) CheckAndSetDefaults() error {
 	if err != nil {
 		return trace.Wrap(err)
 	}
+	if ws.Version == "" {
+		ws.Version = V2
+	}
 	if ws.Spec.User == "" {
 		return trace.BadParameter("missing User")
+	}
+	if len(ws.Spec.Pub) == 0 {
+		return trace.BadParameter("missing Pub")
+	}
+	if ws.Spec.BearerToken == "" {
+		return trace.BadParameter("missing BearerToken")
+	}
+	if ws.Spec.BearerTokenExpires.IsZero() {
+		return trace.BadParameter("missing BearerTokenExpires")
+	}
+	if ws.Spec.Expires.IsZero() {
+		return trace.BadParameter("missing Expires")
 	}
 	return nil
 }
@@ -459,6 +474,9 @@ func (r *WebTokenV3) SetExpiry(t time.Time) {
 func (r *WebTokenV3) CheckAndSetDefaults() error {
 	if err := r.Metadata.CheckAndSetDefaults(); err != nil {
 		return trace.Wrap(err)
+	}
+	if r.Version == "" {
+		r.Version = V3
 	}
 	if r.Spec.User == "" {
 		return trace.BadParameter("User required")

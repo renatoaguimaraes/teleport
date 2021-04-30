@@ -161,6 +161,29 @@ func (c *GithubConnectorV3) CheckAndSetDefaults() error {
 	if err := c.Metadata.CheckAndSetDefaults(); err != nil {
 		return trace.Wrap(err)
 	}
+	if c.Version == "" {
+		c.Version = V3
+	}
+	if c.Kind == "" {
+		c.Kind = KindGithubConnector
+	}
+	if c.Spec.ClientID == "" {
+		return trace.BadParameter("missing ClientID")
+	}
+	if c.Spec.ClientSecret == "" {
+		return trace.BadParameter("missing ClientSecret")
+	}
+	if c.Spec.RedirectURL == "" {
+		return trace.BadParameter("missing RedirectURL")
+	}
+	for _, tm := range c.Spec.TeamsToLogins {
+		if tm.Organization == "" {
+			return trace.BadParameter("missing Organization in TeamMapping")
+		}
+		if tm.Team == "" {
+			return trace.BadParameter("missing Team in TeamMapping")
+		}
+	}
 	return nil
 }
 

@@ -1077,10 +1077,6 @@ func (a *Server) ExtendWebSession(req WebSessionReq, identity tlsca.Identity) (s
 		return nil, trace.Wrap(err)
 	}
 
-	sess, err = services.ExtendWebSession(sess)
-	if err != nil {
-		return nil, trace.Wrap(err)
-	}
 	return sess, nil
 }
 

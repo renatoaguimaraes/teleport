@@ -293,6 +293,9 @@ func (c *ClusterConfigV3) CheckAndSetDefaults() error {
 	if err != nil {
 		return trace.Wrap(err)
 	}
+	if c.Version == "" {
+		c.Version = V3
+	}
 
 	if c.Spec.SessionRecording == "" {
 		c.Spec.SessionRecording = RecordAtNode

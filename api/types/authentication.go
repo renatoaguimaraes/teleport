@@ -253,6 +253,9 @@ func (c *AuthPreferenceV2) CheckAndSetDefaults() error {
 	if err != nil {
 		return trace.Wrap(err)
 	}
+	if c.Version == "" {
+		c.Version = V2
+	}
 
 	// Make sure origin value is always set.
 	if c.Origin() == "" {
